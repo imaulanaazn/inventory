@@ -22,7 +22,7 @@
 
             <div class="form-group">
                 <label for="jumlah">Jumlah</label>
-                <input type="number" name="jumlah" id="jumlah" class="form-control" value="{{ old('jumlah') }}" required max="{{ $stokBarangSetengahJadi->jumlah }}" placeholder="Max: {{ $stokBarangSetengahJadi->jumlah }}">
+                <input type="number" name="jumlah" id="jumlah" class="form-control" value="{{ old('jumlah') }}" required>
             </div>
 
             <div class="form-group">

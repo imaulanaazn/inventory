@@ -36,7 +36,7 @@
 
             <div class="form-group">
                 <label for="jumlah">Jumlah</label>
-                <input type="number" name="jumlah" id="jumlah" class="form-control" value="" required max="{{ $stokBahanBaku->jumlah }}" placeholder="Max: {{ $stokBahanBaku->jumlah }}">
+                <input type="number" name="jumlah" id="jumlah" class="form-control" value="" required>
             </div>
 
             <div class="form-group">

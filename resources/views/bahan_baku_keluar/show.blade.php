@@ -43,5 +43,9 @@
             @endforeach
         </tbody>
     </table>
+
+    <div class="d-flex justify-content-center">
+        {{ $bahanBakuKeluar->links() }}
+    </div>
 </div>
 @endsection

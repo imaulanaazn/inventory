@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('stok_barang_jadi', function (Blueprint $table) {
             $table->id();
+            $table->string('tanggal', 36);
             $table->string('brg_jadi_id', 36);
-            $table->integer('jumlah');
+            $table->integer('stok_awal');
             $table->integer('jumlah_masuk', 0);
             $table->integer('jumlah_keluar', 0);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
 
             $table->foreign('brg_jadi_id')->references('id')->on('barang_jadi')->onDelete('cascade');
+            $table->unique(['tanggal', 'brg_jadi_id']);
         });
     }
 

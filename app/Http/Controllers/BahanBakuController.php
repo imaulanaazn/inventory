@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\BahanBaku;
 use App\Models\BahanBakuKeluar;
 use App\Models\StokBahanBaku;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 
 class BahanBakuController extends Controller
 {
@@ -35,9 +37,11 @@ class BahanBakuController extends Controller
         $bahan->minimal = $request->minimal;
         $bahan->save();
 
+        $date = Carbon::parse(Date::now())->format('m/Y');
+
         $stokBahanBaku = new StokBahanBaku();
+        $stokBahanBaku->tanggal = $date;
         $stokBahanBaku->bahan_baku_id = $request->id;
-        $stokBahanBaku->jumlah = 0;
         $stokBahanBaku->jumlah_masuk = 0;
         $stokBahanBaku->jumlah_keluar = 0;
         $stokBahanBaku->save();

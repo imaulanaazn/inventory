@@ -73,6 +73,10 @@
                 @endforeach
             </tbody>
         </table>
+
+        <div class="d-flex justify-content-center">
+            {{ $pemesananBarangJadi->links() }}
+        </div>
     </div>
 </div>
 @endsection

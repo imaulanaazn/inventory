@@ -108,14 +108,14 @@
     @endauth
 
     <li class="nav-item">
-        <a class="nav-link" href="">
+        <a class="nav-link" href="{{route('laporan.index')}}">
             <span>Download Laporan</span></a>
     </li>
 
     @auth
     @if (auth()->user()->role === 'manager')
     <li class="nav-item">
-        <a class="nav-link" href="">
+        <a class="nav-link" href="{{route('manager.show')}}">
             <span>Kelola User</span>
         </a>
     </li>

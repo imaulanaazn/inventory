@@ -24,7 +24,7 @@
 
             <div class="form-group">
                 <label for="jumlah">Jumlah</label>
-                <input type="number" name="jumlah" id="jumlah" class="form-control" value="{{ $barangKeluar->jumlah }}" required max="{{ $stokBarangJadi->jumlah + $barangKeluar->jumlah }}" placeholder="Max: {{ $stokBarangJadi->jumlah + $barangKeluar->jumlah }}">
+                <input type="number" name="jumlah" id="jumlah" class="form-control" value="{{ $barangKeluar->jumlah }}" required>
             </div>
 
             <div class="form-group">
@@ -34,7 +34,7 @@
 
             <div class="form-group">
                 <label for="created_at">Tanggal Keluar</label>
-                <input type="date" name="created_at" id="created_at" class="form-control" value="{{ $barangKeluar->created_at->format('Y-m-d') }}" required>
+                <input type="date" name="created_at" id="created_at" class="form-control" value="{{ $barangKeluar->created_at->format('Y-m-d') }}" required readonly>
             </div>
 
 

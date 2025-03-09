@@ -8,6 +8,7 @@ use App\Models\BarangJadi;
 use App\Models\KebutuhanBarangJadi;
 use App\Models\Potongan;
 use App\Models\StokBarangJadi;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 
@@ -39,9 +40,11 @@ class BarangJadiController extends Controller
 
         $barangJadi->save();
 
+        $date = Carbon::parse(Date::now())->format('m/Y');
+
         $stokBarangJadi = new StokBarangJadi();
+        $stokBarangJadi->tanggal = $date;
         $stokBarangJadi->brg_jadi_id = $request->id;
-        $stokBarangJadi->jumlah = 0;
         $stokBarangJadi->jumlah_masuk = 0;
         $stokBarangJadi->jumlah_keluar = 0;
         $stokBarangJadi->save();

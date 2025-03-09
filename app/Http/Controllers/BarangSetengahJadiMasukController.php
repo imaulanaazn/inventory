@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\BarangSetengahJadi;
 use App\Models\BarangSetengahJadiMasuk;
 use App\Models\StokBarangSetengahJadi;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BarangSetengahJadiMasukController extends Controller
 {
     public function show()
     {
-        $barangMasuk = BarangSetengahJadiMasuk::with('brg_setengah_jadi')->get();
+        $barangMasuk = BarangSetengahJadiMasuk::with('brg_setengah_jadi')->orderBy('created_at', 'desc')->paginate(10);
         return view('barang_setengah_jadi_masuk.show', compact('barangMasuk'));
     }
 
@@ -32,11 +33,13 @@ class BarangSetengahJadiMasukController extends Controller
         $barangMasuk->keterangan = $request->keterangan;
         $barangMasuk->created_at = $request->created_at;
         $barangMasuk->updated_at = $request->created_at;
-
         $barangMasuk->save();
 
-        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $request->kode_barang)->first();
-        $stokBarangSetengahJadi->jumlah += $request->jumlah;
+        $date = Carbon::parse($request->created_at)->format('m/Y');
+
+        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('tanggal', $date)
+            ->where('brg_setengah_jadi_id',  $request->kode_barang)
+            ->first();
         $stokBarangSetengahJadi->jumlah_masuk += $request->jumlah;
 
         $stokBarangSetengahJadi->save();
@@ -60,11 +63,13 @@ class BarangSetengahJadiMasukController extends Controller
         $barangMasuk->keterangan = $request->keterangan;
         $barangMasuk->created_at = $request->created_at;
         $barangMasuk->updated_at = $request->created_at;
-
         $barangMasuk->save();
 
-        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $request->kode_barang)->first();
-        $stokBarangSetengahJadi->jumlah += $diff;
+        $date = Carbon::parse($request->created_at)->format('m/Y');
+
+        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('tanggal', $date)
+            ->where('brg_setengah_jadi_id',  $request->kode_barang)
+            ->first();
         $stokBarangSetengahJadi->jumlah_masuk += $diff;
         $stokBarangSetengahJadi->save();
 
@@ -74,13 +79,37 @@ class BarangSetengahJadiMasukController extends Controller
     public function hapusBarangMasuk($id)
     {
         $barangMasuk = BarangSetengahJadiMasuk::find($id);
-        $barangMasuk->delete();
 
-        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $barangMasuk->brg_setengah_jadi_id)->first();
-        $stokBarangSetengahJadi->jumlah -= $barangMasuk->jumlah;
+        $date = Carbon::parse($barangMasuk->created_at)->format('m/Y');
+
+        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('tanggal', $date)
+            ->where('brg_setengah_jadi_id', $barangMasuk->brg_setengah_jadi_id)
+            ->first();
         $stokBarangSetengahJadi->jumlah_masuk -= $barangMasuk->jumlah;
+        $barangMasuk->delete();
         $stokBarangSetengahJadi->save();
 
         return redirect()->route('barang-setengah-jadi-masuk.show')->with('success', 'Barang setengah jadi masuk berhasil dihapus');
     }
+
+    // public function checkAndCreateDatabase($date, $barangId)
+    // {
+    //     $stokBarangSetengahJadi = StokBarangSetengahJadi::where('tanggal', $date)
+    //         ->where('brg_setengah_jadi_id', $barangId)
+    //         ->first();
+
+    //     if ($stokBarangSetengahJadi) {
+    //         return $stokBarangSetengahJadi;
+    //     } else {
+    //         $stokBarangSetengahJadi = new StokBarangSetengahJadi;
+    //         $stokBarangSetengahJadi->tanggal = $date;
+    //         $stokBarangSetengahJadi->brg_setengah_jadi_id = $barangId;
+    //         $stokBarangSetengahJadi->stok_awal = 0;
+    //         $stokBarangSetengahJadi->jumlah_masuk = 0;
+    //         $stokBarangSetengahJadi->jumlah_keluar = 0;
+    //         $stokBarangSetengahJadi->save();
+
+    //         return $stokBarangSetengahJadi;
+    //     }
+    // }
 }

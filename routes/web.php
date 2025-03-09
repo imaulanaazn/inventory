@@ -11,20 +11,28 @@ use App\Http\Controllers\BarangSetengahJadiKeluarController;
 use App\Http\Controllers\BarangSetengahJadiMasukController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\ManagerController;
 use App\Http\Controllers\PemesananBahanBakuController;
 use App\Http\Controllers\PemesananBarangJadiController;
 use App\Http\Controllers\PotonganController;
 use App\Http\Controllers\StokBahanBakuController;
 use App\Http\Controllers\StokBarangJadiController;
 use App\Http\Controllers\StokBarangSetengahJadiController;
-use App\Models\BarangJadiKeluar;
-use App\Models\BarangJadiMasuk;
-use App\Models\PemesananBarangJadi;
+use App\Models\BahanBaku;
+use App\Models\BarangJadi;
+use App\Models\BarangSetengahJadi;
+use App\Models\StokBahanBaku;
 use App\Models\StokBarangJadi;
+use App\Models\StokBarangSetengahJadi;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+
     if (Auth::check()) {
         $role = Auth::user()->role;
         return $role === 'manager' ? redirect('/manager') : redirect('/dashboard');
@@ -43,17 +51,111 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 Route::middleware('auth')->group(function () {
+
+    $cacheKey = 'daily_stock_update_' . Carbon::now()->format('Y-m-d');
+
+    if (!Cache::has($cacheKey)) {
+        Cache::put($cacheKey, true, now()->endOfDay());
+        // Update StokBahanBaku
+        BahanBaku::all()->map(function ($bahanBaku) {
+            $date = Carbon::parse(Date::now())->format('m/Y');
+            $stokBahanBaku = StokBahanBaku::where('tanggal', $date)
+                ->where('bahan_baku_id', $bahanBaku->id)
+                ->first();
+
+            if (!$stokBahanBaku) {
+                $stokBahanBaku = new StokBahanBaku();
+                $stokBahanBaku->tanggal = $date;
+                $stokBahanBaku->bahan_baku_id = $bahanBaku->id;
+                $stokBahanBaku->stok_awal = 0;
+                $stokBahanBaku->jumlah_masuk = 0;
+                $stokBahanBaku->jumlah_keluar = 0;
+                $stokBahanBaku->save();
+            }
+        });
+
+        $stokBahanBakuPrevMonth = StokBahanBaku::where('tanggal', Carbon::parse(Date::now()->subMonth())->format('m/Y'))->get();
+        $stokBahanBakuPrevMonth->map(function ($stok) {
+            $currentMonthStok = StokBahanBaku::where('tanggal', Carbon::parse(Date::now())->format('m/Y'))
+                ->where('bahan_baku_id', $stok->bahan_baku_id)
+                ->first();
+
+            if ($currentMonthStok) {
+                $currentMonthStok->stok_awal = $stok->stok_awal + $stok->jumlah_masuk - $stok->jumlah_keluar;
+                $currentMonthStok->save();
+            }
+        });
+
+        // Update StokBarangSetengahJadi
+        BarangSetengahJadi::all()->map(function ($barangSetengahJadi) {
+            $date = Carbon::parse(Date::now())->format('m/Y');
+            $stokBarangSetengahJadi = StokBarangSetengahJadi::where('tanggal', $date)
+                ->where('brg_setengah_jadi_id', $barangSetengahJadi->id)
+                ->first();
+
+            if (!$stokBarangSetengahJadi) {
+                $stokBarangSetengahJadi = new StokBarangSetengahJadi();
+                $stokBarangSetengahJadi->tanggal = $date;
+                $stokBarangSetengahJadi->brg_setengah_jadi_id = $barangSetengahJadi->id;
+                $stokBarangSetengahJadi->stok_awal = 0;
+                $stokBarangSetengahJadi->jumlah_masuk = 0;
+                $stokBarangSetengahJadi->jumlah_keluar = 0;
+                $stokBarangSetengahJadi->save();
+            }
+        });
+
+        $stokBarangSetengahJadiPrevMonth = StokBarangSetengahJadi::where('tanggal', Carbon::parse(Date::now()->subMonth())->format('m/Y'))->get();
+        $stokBarangSetengahJadiPrevMonth->map(function ($stok) {
+            $currentMonthStok = StokBarangSetengahJadi::where('tanggal', Carbon::parse(Date::now())->format('m/Y'))
+                ->where('brg_setengah_jadi_id', $stok->brg_setengah_jadi_id)
+                ->first();
+
+            if ($currentMonthStok) {
+                $currentMonthStok->stok_awal = $stok->stok_awal + $stok->jumlah_masuk - $stok->jumlah_keluar;
+                $currentMonthStok->save();
+            }
+        });
+
+        // Update StokBarangJadi
+        BarangJadi::all()->map(function ($barangJadi) {
+            $date = Carbon::parse(Date::now())->format('m/Y');
+            $stokBarangJadi = StokBarangJadi::where('tanggal', $date)
+                ->where('brg_jadi_id', $barangJadi->id)
+                ->first();
+
+            if (!$stokBarangJadi) {
+                $stokBarangJadi = new StokBarangJadi();
+                $stokBarangJadi->tanggal = $date;
+                $stokBarangJadi->brg_jadi_id = $barangJadi->id;
+                $stokBarangJadi->stok_awal = 0;
+                $stokBarangJadi->jumlah_masuk = 0;
+                $stokBarangJadi->jumlah_keluar = 0;
+                $stokBarangJadi->save();
+            }
+        });
+
+        $stokBarangJadiPrevMonth = StokBarangJadi::where('tanggal', Carbon::parse(Date::now()->subMonth())->format('m/Y'))->get();
+        $stokBarangJadiPrevMonth->map(function ($stok) {
+            $currentMonthStok = StokBarangJadi::where('tanggal', Carbon::parse(Date::now())->format('m/Y'))
+                ->where('brg_jadi_id', $stok->brg_jadi_id)
+                ->first();
+
+            if ($currentMonthStok) {
+                $currentMonthStok->stok_awal = $stok->stok_awal + $stok->jumlah_masuk - $stok->jumlah_keluar;
+                $currentMonthStok->save();
+            }
+        });
+    }
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+    Route::get('/laporan/stok', [LaporanController::class, 'generatePDF'])->name('laporan.download');
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // BAHAN BAKU STOK
     Route::get('stok-bahan-baku', [StokBahanBakuController::class, 'show'])->name('stok-bahan-baku.show');
-    // Route::post('stok-bahan-baku', [StokBahanBakuController::class, 'create'])->name('stok-bahan-baku.create');
-    // Route::get('stok-bahan-baku/{id}', [StokBahanBakuController::class, 'show'])->name('stok-bahan-baku.show');
-    // Route::put('stok-bahan-baku/{id}', [StokBahanBakuController::class, 'update'])->name('stok-bahan-baku.update');
-    // Route::delete('stok-bahan-baku/{id}', [StokBahanBakuController::class, 'destroy'])->name('stok-bahan-baku.destroy');
 
     //BAHAN BAKU MASUK
     Route::get('pemesanan-bahan-baku', [PemesananBahanBakuController::class, 'show'])->name('pemesanan-bahan-baku.show');
@@ -165,4 +267,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('barang-jadi/{id}/kebutuhan', [BarangJadiController::class, 'kebutuhanForm'])->name('barang-jadi.kebutuhan_form');
     Route::post('barang-jadi/{id}/kebutuhan', [BarangJadiController::class, 'kebutuhanTambah'])->name('barang-jadi.kebutuhan_tambah');
     Route::delete('barang-jadi/{id}/kebutuhan/{kebutuhan_id}', [BarangJadiController::class, 'kebutuhanHapus'])->name('barang-jadi.kebutuhan_hapus');
+});
+
+Route::middleware(['auth', 'role:manager'])->group(function () {
+    Route::get('/manager', [ManagerController::class, 'show'])->name('manager.show');
+    Route::get('/manager/user-create', [ManagerController::class, 'formTambah'])->name('manager_user.form-tambah');
+    Route::post('/manager/user-store', [ManagerController::class, 'tambah'])->name('manager_user.tambah');
+    Route::get('/manager/user/{id}/edit', [ManagerController::class, 'formUbah'])->name('manager_user.form-ubah');
+    Route::put('/manager/user/{id}', [ManagerController::class, 'ubah'])->name('manager_user.ubah');
+    Route::delete('/manager/user/{id}', [ManagerController::class, 'hapus'])->name('manager_user.hapus');
 });

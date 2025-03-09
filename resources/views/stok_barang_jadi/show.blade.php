@@ -11,7 +11,7 @@
     </p>
     <div class="row">
         <div class="col-6">
-            <h2 class="mb-0 fw-bold">Stok Barang Setengah Jadi</h2>
+            <h2 class="mb-0 fw-bold">Stok Barang Jadi</h2>
 
         </div>
         <div class="col-6 d-flex justify-content-end align-items-end">
@@ -32,16 +32,19 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($stokBarangJadi as $item)
+            @foreach ($barangJadi as $item)
+            @php
+            $stok = $stokBarangJadi->where('brg_jadi_id', $item->id)->first();
+            @endphp
             <tr>
-                <td>{{ $item->barang_jadi->id }}</td>
-                <td>{{ $item->barang_jadi->nama }}</td>
-                <td>{{ $item->barang_jadi->pureng_plendes }}</td>
-                <td>{{ $item->jumlah }}</td>
-                <td>{{ $item->jumlah_masuk }}</td>
-                <td>{{ $item->jumlah_keluar }}</td>
-                <td>{{ $item->jumlah }}</td>
-                <td><a href="{{route('barang-jadi-keluar.form-tambah', $item->barang_jadi->id)}}" class="btn btn-info btn-sm mr-2">Ambil</a></td>
+                <td>{{ $item->id }}</td>
+                <td>{{ $item->nama }}</td>
+                <td>{{ $item->pureng_plendes }}</td>
+                <td>{{ $stok ? $stok->stok_awal : 0}}</td>
+                <td>{{ $stok ? $stok->jumlah_masuk : 0 }}</td>
+                <td>{{ $stok ? $stok->jumlah_keluar : 0 }}</td>
+                <td>{{ $stok ? $stok->stok_awal + $stok->jumlah_masuk - $stok->jumlah_keluar : 0 }}</td>
+                <td><a href="{{route('barang-jadi-keluar.form-tambah', $item->id)}}" class="btn btn-info btn-sm mr-2">Ambil</a></td>
             </tr>
             @endforeach
         </tbody>

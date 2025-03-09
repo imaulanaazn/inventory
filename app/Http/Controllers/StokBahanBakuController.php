@@ -5,49 +5,22 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\BahanBaku;
 use App\Models\StokBahanBaku;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 
 class StokBahanBakuController extends Controller
 {
     public function show()
     {
-        $stokBahanBaku = StokBahanBaku::with('bahan_baku')->get();
-        return view('stok_bahan_baku.show', compact('stokBahanBaku'));
-    }
+        $date = Carbon::parse(Date::now())->format('m/Y');
 
-    public function create(Request $request)
-    {
-        $stokBahanBaku = new StokBahanBaku;
+        $bahanBaku = BahanBaku::all();
 
-        $stokBahanBaku->bahan_baku_id = $request->bahan_baku_id;
-        $stokBahanBaku->jumlah = $request->jumlah;
-        $stokBahanBaku->jumlah_masuk = $request->jumlah_masuk;
-        $stokBahanBaku->jumlah_keluar = $request->jumlah_keluar;
+        $stokBahanBaku = StokBahanBaku::with('bahan_baku')
+            ->where('tanggal', $date)
+            ->get();
 
-        $stokBahanBaku->save();
-
-        return response()->json($stokBahanBaku);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $stokBahanBaku = StokBahanBaku::find($id);
-
-        $stokBahanBaku->bahan_baku_id = $request->bahan_baku_id;
-        $stokBahanBaku->jumlah = $request->jumlah;
-        $stokBahanBaku->jumlah_masuk = $request->jumlah_masuk;
-        $stokBahanBaku->jumlah_keluar = $request->jumlah_keluar;
-
-        $stokBahanBaku->save();
-
-        return response()->json($stokBahanBaku);
-    }
-
-    public function destroy($id)
-    {
-        $stokBahanBaku = StokBahanBaku::find($id);
-        $stokBahanBaku->delete();
-
-        return response()->json('deleted');
+        return view('stok_bahan_baku.show', compact('stokBahanBaku', 'bahanBaku'));
     }
 }

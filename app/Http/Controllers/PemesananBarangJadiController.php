@@ -17,7 +17,7 @@ class PemesananBarangJadiController extends Controller
 {
     public function show()
     {
-        $pemesananBarangJadi = PemesananBarangJadi::all();
+        $pemesananBarangJadi = PemesananBarangJadi::orderBy('created_at', 'desc')->paginate(10);
         return view('pemesanan_barang_jadi.show', compact('pemesananBarangJadi'));
     }
 

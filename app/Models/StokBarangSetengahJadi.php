@@ -9,8 +9,9 @@ class StokBarangSetengahJadi extends Model
     protected $table = 'stok_barang_setengah_jadi';
 
     protected $fillable = [
+        'tanggal',
         'brg_setengah_jadi_id',
-        'jumlah',
+        'stok_awal',
         'jumlah_masuk',
         'jumlah_keluar',
         'created_at',

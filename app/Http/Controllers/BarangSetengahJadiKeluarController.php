@@ -6,21 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Models\BarangSetengahJadi;
 use App\Models\BarangSetengahJadiKeluar;
 use App\Models\StokBarangSetengahJadi;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 
 class BarangSetengahJadiKeluarController extends Controller
 {
     public function show()
     {
-        $barangKeluar = BarangSetengahJadiKeluar::with('brg_setengah_jadi')->get();
+        $barangKeluar = BarangSetengahJadiKeluar::with('brg_setengah_jadi')->orderBy('created_at', 'desc')->paginate(10);
         return view('barang_setengah_jadi_keluar.show', compact('barangKeluar'));
     }
 
     public function formTambah($kode_barang)
     {
         $barangSetengahJadi = BarangSetengahJadi::where('id', $kode_barang)->first();
-        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $kode_barang)->first();
-        return view('barang_setengah_jadi_keluar.form_tambah', compact('barangSetengahJadi', 'stokBarangSetengahJadi'));
+        $date = Carbon::parse(Date::now())->format('m/Y');
+        // $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $kode_barang)->where('tanggal', $date)->first();
+        return view('barang_setengah_jadi_keluar.form_tambah', compact('barangSetengahJadi'));
     }
 
     public function tambahBarangKeluar(Request $request)
@@ -34,8 +37,11 @@ class BarangSetengahJadiKeluarController extends Controller
 
         $barangKeluar->save();
 
-        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $request->kode_barang)->first();
-        $stokBarangSetengahJadi->jumlah -= $request->jumlah;
+        $date = Carbon::parse($request->created_at)->format('m/Y');
+
+        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('tanggal', $date)
+            ->where('brg_setengah_jadi_id', $request->kode_barang)
+            ->first();
         $stokBarangSetengahJadi->jumlah_keluar += $request->jumlah;
         $stokBarangSetengahJadi->save();
 
@@ -46,8 +52,9 @@ class BarangSetengahJadiKeluarController extends Controller
     public function formUbah($idKeluar)
     {
         $barangKeluar = BarangSetengahJadiKeluar::find($idKeluar);
-        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $barangKeluar->brg_setengah_jadi_id)->first();
-        return view('barang_setengah_jadi_keluar.form_ubah', compact('barangKeluar', 'stokBarangSetengahJadi'));
+        $date = Carbon::parse(Date::now())->format('m/Y');
+        // $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $barangKeluar->brg_setengah_jadi_id)->where('tanggal', $date)->first();
+        return view('barang_setengah_jadi_keluar.form_ubah', compact('barangKeluar'));
     }
 
     public function ubahBarangKeluar(Request $request, $idKeluar)
@@ -63,8 +70,11 @@ class BarangSetengahJadiKeluarController extends Controller
 
         $dataKeluar->save();
 
-        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $request->kode_barang)->first();
-        $stokBarangSetengahJadi->jumlah -= $diff;
+        $date = Carbon::parse($request->created_at)->format('m/Y');
+
+        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('tanggal', $date)
+            ->where('brg_setengah_jadi_id', $request->kode_barang)
+            ->first();
         $stokBarangSetengahJadi->jumlah_keluar += $diff;
         $stokBarangSetengahJadi->save();
 
@@ -74,14 +84,37 @@ class BarangSetengahJadiKeluarController extends Controller
     public function hapusBarangKeluar($idKeluar)
     {
         $dataKeluar = BarangSetengahJadiKeluar::find($idKeluar);
-        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('brg_setengah_jadi_id', $dataKeluar->brg_setengah_jadi_id)->first();
+        $date = Carbon::parse($dataKeluar->created_at)->format('m/Y');
 
-        $stokBarangSetengahJadi->jumlah += $dataKeluar->jumlah;
+        $stokBarangSetengahJadi = StokBarangSetengahJadi::where('tanggal', $date)
+            ->where('brg_setengah_jadi_id', $dataKeluar->brg_setengah_jadi_id)
+            ->first();
         $stokBarangSetengahJadi->jumlah_keluar -= $dataKeluar->jumlah;
-        $stokBarangSetengahJadi->save();
 
         $dataKeluar->delete();
+        $stokBarangSetengahJadi->save();
 
         return redirect()->route('barang-setengah-jadi-keluar.show')->with('success', 'Barang setengah jadi keluar berhasil dihapus');
     }
+
+    // public function checkAndCreateDatabase($date, $barangId)
+    // {
+    //     $stokBarangSetengahJadi = StokBarangSetengahJadi::where('tanggal', $date)
+    //         ->where('brg_setengah_jadi_id', $barangId)
+    //         ->first();
+
+    //     if ($stokBarangSetengahJadi) {
+    //         return $stokBarangSetengahJadi;
+    //     } else {
+    //         $stokBarangSetengahJadi = new StokBarangSetengahJadi;
+    //         $stokBarangSetengahJadi->tanggal = $date;
+    //         $stokBarangSetengahJadi->brg_setengah_jadi_id = $barangId;
+    //         $stokBarangSetengahJadi->stok_awal = 0;
+    //         $stokBarangSetengahJadi->jumlah_masuk = 0;
+    //         $stokBarangSetengahJadi->jumlah_keluar = 0;
+    //         $stokBarangSetengahJadi->save();
+
+    //         return $stokBarangSetengahJadi;
+    //     }
+    // }
 }

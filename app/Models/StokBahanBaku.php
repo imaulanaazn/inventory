@@ -10,7 +10,7 @@ class StokBahanBaku extends Model
     use HasFactory;
 
     protected $table = 'stok_bahan_baku';
-    protected $fillable = ['bahan_baku_id', 'jumlah', 'jumlah_masuk', 'jumlah_keluar'];
+    protected $fillable = ['tanggal', 'bahan_baku_id', 'stok_awal', 'jumlah_masuk', 'jumlah_keluar'];
 
     public function bahan_baku()
     {

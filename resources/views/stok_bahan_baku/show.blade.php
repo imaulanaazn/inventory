@@ -33,17 +33,19 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($stokBahanBaku as $item)
+            @foreach ($bahanBaku as $item)
+            @php
+            $stok = $stokBahanBaku->where('bahan_baku_id', $item->id)->first();
+            @endphp
             <tr>
-                <td>{{ $item->bahan_baku->id }}</td>
-                <td>{{ $item->bahan_baku->nama }}</td>
-                <td>{{ $item->bahan_baku->jenis }}</td>
-                <td>{{ $item->jumlah }}</td>
-                <td>{{ $item->jumlah_masuk }}</td>
-                <td>{{ $item->jumlah_keluar }}</td>
-                <!-- <td>{{ $item->bahan_baku->minimal }}</td> -->
-                <td>{{ $item->jumlah }}</td>
-                <td><a href="{{route('bahan-baku-keluar.form-tambah', $item->bahan_baku->id)}}" class="btn btn-info btn-sm mr-2">Ambil</a></td>
+                <td>{{ $item->id }}</td>
+                <td>{{ $item->nama }}</td>
+                <td>{{ $item->jenis }}</td>
+                <td>{{ $stok ? $stok->stok_awal : 0}}</td>
+                <td>{{ $stok ? $stok->jumlah_masuk : 0 }}</td>
+                <td>{{ $stok ? $stok->jumlah_keluar : 0 }}</td>
+                <td>{{ $stok ? $stok->stok_awal + $stok->jumlah_masuk - $stok->jumlah_keluar : 0 }}</td>
+                <td><a href="{{route('bahan-baku-keluar.form-tambah', $item->id)}}" class="btn btn-info btn-sm mr-2">Ambil</a></td>
             </tr>
             @endforeach
         </tbody>
