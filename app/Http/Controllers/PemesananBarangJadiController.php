@@ -120,6 +120,14 @@ class PemesananBarangJadiController extends Controller
                 // Hitung total kebutuhan
                 $total = $jumlah_pesanan * $jumlah_kebutuhan;
 
+                // Jika bahan baku adalah berjenis potongan, bagi dengan angka potongan
+                if ($table_source == 'potongan') {
+                    $potongan = Potongan::find($bahan_baku_id);
+                    if ($potongan && $potongan->angka_potong > 0) {
+                        $total = ceil($total / $potongan->angka_potong);
+                    }
+                }
+
                 // Buat key unik untuk setiap bahan baku
                 $key = $table_source . '_' . $bahan_baku_id;
 
@@ -154,7 +162,6 @@ class PemesananBarangJadiController extends Controller
             }
             $grouped_bahan_baku[$source][] = $bahan;
         }
-        // dd($grouped_bahan_baku);
 
         return view('pemesanan_barang_jadi.hitung', compact('pesanan', 'grouped_bahan_baku'));
     }

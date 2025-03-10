@@ -45,6 +45,7 @@ class BarangJadiController extends Controller
         $stokBarangJadi = new StokBarangJadi();
         $stokBarangJadi->tanggal = $date;
         $stokBarangJadi->brg_jadi_id = $request->id;
+        $stokBarangJadi->stok_awal = 0;
         $stokBarangJadi->jumlah_masuk = 0;
         $stokBarangJadi->jumlah_keluar = 0;
         $stokBarangJadi->save();

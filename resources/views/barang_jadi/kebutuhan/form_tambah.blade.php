@@ -71,8 +71,8 @@
             }
         }
 
+        potonganSelect.selectedIndex = -1;
         // Reset the selected option
-        potonganSelect.selectedIndex = 1;
     });
 
     // Trigger change event on page load to set initial state

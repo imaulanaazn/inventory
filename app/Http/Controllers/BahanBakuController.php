@@ -42,6 +42,7 @@ class BahanBakuController extends Controller
         $stokBahanBaku = new StokBahanBaku();
         $stokBahanBaku->tanggal = $date;
         $stokBahanBaku->bahan_baku_id = $request->id;
+        $stokBahanBaku->stok_awal = 0;
         $stokBahanBaku->jumlah_masuk = 0;
         $stokBahanBaku->jumlah_keluar = 0;
         $stokBahanBaku->save();
